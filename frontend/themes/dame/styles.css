@@ -1,0 +1,182 @@
+/* Ghanaian Checkers - Game Styles */
+
+/* Container */
+.game-container {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+}
+
+.game-title {
+    color: #eee;
+    font-family: 'Georgia', serif;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Status Label */
+.status-label {
+    font-size: 1.2rem;
+    padding: 0.5rem 1.5rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.status-white {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.status-black {
+    background: #333;
+    color: #f0f0f0;
+}
+
+.status-gameover {
+    background: #ffd700;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Board Container */
+.board-container {
+    padding: 15px;
+    background: linear-gradient(145deg, #5d4e37, #3d2e17);
+    border-radius: 10px;
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.5),
+        inset 0 2px 5px rgba(255, 255, 255, 0.1);
+}
+
+/* Board Grid */
+.board-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 60px);
+    grid-template-rows: repeat(8, 60px);
+    gap: 0;
+    border: 3px solid #2a1f14;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Board Squares */
+.board-square {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+}
+
+.light-square {
+    background: #f0d9b5;
+}
+
+.dark-square {
+    background: #b58863;
+}
+
+/* Square States */
+.board-square.highlighted {
+    background: #7fff7f !important;
+    box-shadow: inset 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+.board-square.highlighted::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: rgba(0, 200, 0, 0.6);
+    border-radius: 50%;
+}
+
+.board-square.selected {
+    box-shadow: inset 0 0 0 4px #ffcc00;
+}
+
+/* Pieces */
+.board-square.white-piece::before,
+.board-square.black-piece::before {
+    content: '';
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    position: absolute;
+    transition: transform 0.15s ease;
+}
+
+.board-square.white-piece::before {
+    background: radial-gradient(circle at 30% 30%, #ffffff, #d4d4d4);
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.4),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.2),
+        inset 0 3px 6px rgba(255, 255, 255, 0.8);
+    border: 2px solid #aaa;
+}
+
+.board-square.black-piece::before {
+    background: radial-gradient(circle at 30% 30%, #4a4a4a, #1a1a1a);
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.5),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.4),
+        inset 0 3px 6px rgba(255, 255, 255, 0.1);
+    border: 2px solid #333;
+}
+
+/* King Crown */
+.board-square.king-piece::after {
+    content: '♔';
+    position: absolute;
+    font-size: 24px;
+    z-index: 1;
+}
+
+.board-square.white-piece.king-piece::after {
+    color: #b8860b;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.board-square.black-piece.king-piece::after {
+    color: #ffd700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Hover Effects */
+.board-square:hover {
+    filter: brightness(1.1);
+}
+
+.board-square.white-piece:hover::before,
+.board-square.black-piece:hover::before {
+    transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .board-grid {
+        grid-template-columns: repeat(8, 40px);
+        grid-template-rows: repeat(8, 40px);
+    }
+
+    .board-square {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    .board-square.white-piece::before,
+    .board-square.black-piece::before {
+        width: 32px;
+        height: 32px;
+    }
+
+    .board-square.king-piece::after {
+        font-size: 16px;
+    }
+
+    .game-title {
+        font-size: 1.5rem;
+    }
+}
