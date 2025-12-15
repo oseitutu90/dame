@@ -5,6 +5,11 @@ import com.dame.engine.PieceType;
 import com.dame.engine.Player;
 import com.vaadin.flow.component.html.Div;
 
+/*
+ * This class represents a single square on the board.
+ * It extends Div and has a row and column position.
+ * It also has a highlighted and selected state.
+ */
 public class BoardSquare extends Div {
 
     private final int row;

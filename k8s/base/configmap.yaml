@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dame-config
+  namespace: dame
+  labels:
+    app.kubernetes.io/name: dame
+    app.kubernetes.io/component: config
+data:
+  DB_HOST: "postgres.impala.svc.cluster.local"
+  DB_NAME: "dame"
+  DB_USER: "dame_user"
+  JAVA_OPTS: "-Xms256m -Xmx512m"

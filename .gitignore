@@ -1,0 +1,67 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Package files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node modules (Vaadin)
+node_modules/
+
+# Vaadin generated files
+frontend/generated/
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+webpack.generated.js
+vite.generated.ts
+tsconfig.json
+types.d.ts
+pnpmfile.cjs
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files (keep templates, ignore actual secrets)
+.env
+.env.local
+.env.*.local
+
+# Never commit actual secrets
+# Keep the template but ignore if someone creates a real secret file
+# k8s/base/secret.yaml should be committed as a TEMPLATE only
+# Real secrets should use sealed-secrets or external-secrets-operator

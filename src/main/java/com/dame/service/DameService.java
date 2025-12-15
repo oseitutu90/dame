@@ -11,15 +11,52 @@ import java.util.List;
 public class DameService {
 
     private GameLogic game;
+    private final MatchScore matchScore;
 
     public DameService() {
         this.game = new GameLogic();
+        this.matchScore = new MatchScore();
     }
 
     // ========== GAME CONTROL ==========
 
+    /**
+     * Starts a new game within the current match.
+     * If a game is in progress, it counts as a forfeit for the current player.
+     */
     public void newGame() {
+        if (!matchScore.isMatchOver()) {
+            if (game.isGameOver()) {
+                // Record the completed game result
+                matchScore.recordGameResult(game.getGameState());
+            } else {
+                // Game in progress - forfeit for current player
+                matchScore.recordForfeit(game.getCurrentPlayer());
+            }
+        }
         game.reset();
+    }
+
+    /**
+     * Resets the entire match (scores and game).
+     */
+    public void resetMatch() {
+        matchScore.reset();
+        game.reset();
+    }
+
+    // ========== MATCH QUERIES ==========
+
+    public MatchScore getMatchScore() {
+        return matchScore;
+    }
+
+    public boolean isMatchOver() {
+        return matchScore.isMatchOver();
+    }
+
+    public Player getMatchWinner() {
+        return matchScore.getMatchWinner();
     }
 
     // ========== STATE QUERIES ==========

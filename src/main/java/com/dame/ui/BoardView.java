@@ -2,8 +2,10 @@ package com.dame.ui;
 
 import com.dame.engine.Board;
 import com.dame.engine.GameState;
+import com.dame.engine.MatchScore;
 import com.dame.engine.Move;
 import com.dame.engine.Piece;
+import com.dame.engine.Player;
 import com.dame.engine.Position;
 import com.dame.service.DameService;
 import com.vaadin.flow.component.button.Button;
@@ -13,17 +15,26 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 
 import java.util.List;
 
-@Route("")
+@Route(value = "", layout = MainLayout.class)
+@PageTitle("Play | Checkers")
+@PermitAll
 public class BoardView extends VerticalLayout {
 
     private final DameService gameService;
     private final BoardSquare[][] squares = new BoardSquare[8][8];
     private final Span statusLabel;
+    private final Span scoreLabel;
+    private final Span gameCountLabel;
+    private final Span matchResultLabel;
+    private Button newGameBtn;
     private Button undoBtn;
+    private Button newMatchBtn;
 
     private BoardSquare selectedSquare;
     private List<Move> currentValidMoves;
@@ -32,13 +43,47 @@ public class BoardView extends VerticalLayout {
         this.gameService = gameService;
 
         setSizeFull();
-        setAlignItems(Alignment.CENTER);
-        setJustifyContentMode(JustifyContentMode.CENTER);
+        setPadding(false);
+        setSpacing(false);
         addClassName("game-container");
 
-        // Title
-        H1 title = new H1("Ghanaian Checkers");
+        // ========== HEADER SECTION ==========
+        Div header = new Div();
+        header.addClassName("header-section");
+
+        H1 title = new H1("Checkers");
         title.addClassName("game-title");
+
+        header.add(title);
+
+        // ========== MAIN CONTENT AREA (horizontal layout) ==========
+        HorizontalLayout mainContent = new HorizontalLayout();
+        mainContent.addClassName("main-content");
+        mainContent.setSizeFull();
+        mainContent.setJustifyContentMode(JustifyContentMode.CENTER);
+        mainContent.setAlignItems(Alignment.CENTER);
+        mainContent.setSpacing(false);
+        mainContent.setPadding(false);
+
+        // --- CENTER: Game Board Area ---
+        VerticalLayout gameArea = new VerticalLayout();
+        gameArea.addClassName("game-area");
+        gameArea.setAlignItems(Alignment.CENTER);
+        gameArea.setSpacing(false);
+        gameArea.setPadding(false);
+
+        // Score display
+        scoreLabel = new Span();
+        scoreLabel.addClassName("score-label");
+
+        // Game count display
+        gameCountLabel = new Span();
+        gameCountLabel.addClassName("game-count-label");
+
+        // Match result label
+        matchResultLabel = new Span();
+        matchResultLabel.addClassName("match-result-label");
+        matchResultLabel.setVisible(false);
 
         // Status label
         statusLabel = new Span();
@@ -50,10 +95,52 @@ public class BoardView extends VerticalLayout {
         // Control buttons
         HorizontalLayout controls = createControls();
 
-        add(title, statusLabel, boardContainer, controls);
+        gameArea.add(scoreLabel, gameCountLabel, matchResultLabel, statusLabel, boardContainer, controls);
+
+        // --- RIGHT: Game Description Panel ---
+        VerticalLayout sidePanel = new VerticalLayout();
+        sidePanel.addClassName("side-panel");
+        sidePanel.setSpacing(false);
+        sidePanel.setPadding(false);
+
+        Div rulesPanel = createRulesPanel();
+        sidePanel.add(rulesPanel);
+
+        // Assemble main content (board + description)
+        mainContent.add(gameArea, sidePanel);
+
+        // Add all sections to main layout
+        add(header, mainContent);
 
         // Initial render
         refreshBoard();
+    }
+
+    private Div createRulesPanel() {
+        Div panel = new Div();
+        panel.addClassName("rules-panel");
+
+        Span titleSpan = new Span("How Ghanaian Dame Differs");
+        titleSpan.addClassName("rules-title");
+
+        Div content = new Div();
+        content.addClassName("rules-content");
+        content.getElement().setProperty("innerHTML",
+                "<strong>Dame</strong> (also called Damii) is Ghana's beloved checkers variant. " +
+                        "Key differences from standard checkers:" +
+                        "<ul class='rules-list'>" +
+                        "<li><strong>Free Capture Choice:</strong> You may choose ANY capture sequence — " +
+                        "no requirement to take the maximum pieces.</li>" +
+                        "<li><strong>Huff Rule:</strong> Miss a mandatory capture? Your piece is forfeited!</li>" +
+                        "<li><strong>Single Piece = Loss:</strong> If you're down to just one piece, you lose instantly.</li>"
+                        +
+                        "<li><strong>Flying Kings:</strong> Kings move any number of squares diagonally, " +
+                        "capturing from distance.</li>" +
+                        "</ul>" +
+                        "<em style='color: #888; font-size: 0.8rem;'>Men can capture both forward and backward.</em>");
+
+        panel.add(titleSpan, content);
+        return panel;
     }
 
     private Div createBoardGrid() {
@@ -77,10 +164,12 @@ public class BoardView extends VerticalLayout {
     }
 
     private HorizontalLayout createControls() {
-        Button newGameBtn = new Button("New Game", e -> {
-            gameService.newGame();
-            clearSelection();
-            refreshBoard();
+        newGameBtn = new Button("New Game", e -> {
+            if (!gameService.isMatchOver()) {
+                gameService.newGame();
+                clearSelection();
+                refreshBoard();
+            }
         });
         newGameBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
@@ -92,7 +181,15 @@ public class BoardView extends VerticalLayout {
         });
         undoBtn.setEnabled(false);
 
-        return new HorizontalLayout(newGameBtn, undoBtn);
+        newMatchBtn = new Button("New Match", e -> {
+            gameService.resetMatch();
+            clearSelection();
+            refreshBoard();
+        });
+        newMatchBtn.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+        newMatchBtn.setVisible(false);
+
+        return new HorizontalLayout(newGameBtn, undoBtn, newMatchBtn);
     }
 
     private void handleSquareClick(BoardSquare square) {
@@ -186,11 +283,54 @@ public class BoardView extends VerticalLayout {
             }
         }
 
+        // Update match score display
+        updateMatchDisplay();
+
         // Update status
         updateStatus();
 
-        // Update undo button state
+        // Update button states
+        updateButtonStates();
+    }
+
+    private void updateMatchDisplay() {
+        MatchScore score = gameService.getMatchScore();
+
+        // Update score label
+        scoreLabel.setText(score.getScoreDisplay());
+
+        // Update game count
+        gameCountLabel.setText(score.getGameCountDisplay());
+
+        // Update match result
+        if (score.isMatchOver()) {
+            matchResultLabel.setText(score.getMatchResultMessage());
+            matchResultLabel.setVisible(true);
+
+            // Style based on winner
+            matchResultLabel.removeClassName("match-result-white");
+            matchResultLabel.removeClassName("match-result-black");
+
+            Player winner = score.getMatchWinner();
+            if (winner == Player.WHITE) {
+                matchResultLabel.addClassName("match-result-white");
+            } else if (winner == Player.BLACK) {
+                matchResultLabel.addClassName("match-result-black");
+            }
+        } else {
+            matchResultLabel.setVisible(false);
+        }
+    }
+
+    private void updateButtonStates() {
+        // Undo button
         undoBtn.setEnabled(gameService.canUndo());
+
+        // New Game button - disabled when match is over
+        newGameBtn.setEnabled(!gameService.isMatchOver());
+
+        // New Match button - visible when match is over
+        newMatchBtn.setVisible(gameService.isMatchOver());
     }
 
     private void updateStatus() {

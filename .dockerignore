@@ -1,0 +1,33 @@
+# Build artifacts
+target/
+!target/*.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Test files
+src/test/
+
+# Node modules (Vaadin frontend)
+node_modules/
+frontend/generated/
+
+# Logs
+*.log
+
+# Kubernetes manifests (not needed in Docker image)
+k8s/
+
+# GitHub Actions
+.github/
