@@ -7,10 +7,11 @@ metadata:
     app.kubernetes.io/name: dame
     app.kubernetes.io/component: backend
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
     - port: 80
-      targetPort: http
+      targetPort: 8080
+      nodePort: 30888
       protocol: TCP
       name: http
   selector:
