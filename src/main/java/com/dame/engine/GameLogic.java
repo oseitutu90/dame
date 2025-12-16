@@ -211,6 +211,24 @@ public class GameLogic {
         this.history.clear();
     }
 
+    /**
+     * Restores game state from a persisted online session.
+     * Used to reconstruct game state when loading from database.
+     *
+     * @param board the board state to restore
+     * @param currentPlayer the player whose turn it is
+     * @param gameState the current game state
+     * @param multiJumpPosition the position of a piece mid-jump, or null
+     */
+    public void restoreState(Board board, Player currentPlayer, GameState gameState, Position multiJumpPosition) {
+        this.board = board.copy();
+        this.currentPlayer = currentPlayer;
+        this.gameState = gameState;
+        this.multiJumpPosition = multiJumpPosition;
+        this.calculator = new MoveCalculator(this.board);
+        this.history.clear();
+    }
+
     // ========== UNDO FUNCTIONALITY ==========
 
     /**

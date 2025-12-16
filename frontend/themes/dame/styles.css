@@ -725,3 +725,189 @@ vaadin-app-layout::part(backdrop) {
 .leaderboard-view vaadin-grid::part(cell) {
     color: var(--cream);
 }
+
+/* ====== ONLINE LOBBY VIEW ====== */
+.lobby-view {
+    background: linear-gradient(135deg, var(--olive-dark) 0%, #2a3328 100%);
+    min-height: 100vh;
+}
+
+.lobby-title {
+    color: var(--kente-gold);
+    font-family: 'Georgia', serif;
+    margin-bottom: 1rem;
+}
+
+.lobby-panel {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid var(--olive-medium);
+}
+
+.lobby-panel h3 {
+    color: var(--kente-gold);
+    font-family: 'Georgia', serif;
+    margin: 0 0 1rem 0;
+}
+
+.matchmaking-section {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid var(--olive-medium);
+}
+
+.queue-status {
+    color: var(--kente-gold);
+    font-style: italic;
+}
+
+.challenges-panel {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border-left: 3px solid var(--kente-gold);
+    margin-bottom: 1rem;
+}
+
+.challenges-panel h3 {
+    color: var(--kente-gold);
+    margin: 0 0 0.5rem 0;
+}
+
+.challenge-row {
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.challenge-row span {
+    color: var(--cream);
+}
+
+/* Lobby grids */
+.lobby-view vaadin-grid {
+    --vaadin-grid-background: rgba(0, 0, 0, 0.2);
+    --vaadin-grid-header-background: rgba(0, 0, 0, 0.3);
+    --vaadin-grid-border-color: var(--olive-medium);
+    border-radius: 8px;
+}
+
+.lobby-view vaadin-grid::part(header-cell) {
+    color: var(--kente-gold);
+    font-weight: bold;
+}
+
+.lobby-view vaadin-grid::part(cell) {
+    color: var(--cream);
+}
+
+/* ====== ONLINE GAME VIEW ====== */
+.online-game-view {
+    background: linear-gradient(135deg, var(--olive-dark) 0%, #2a3328 100%);
+    min-height: 100vh;
+}
+
+.online-game-view h2 {
+    color: var(--kente-gold);
+    font-family: 'Georgia', serif;
+}
+
+.opponent-label {
+    font-size: 1.2rem;
+    color: var(--cream);
+    font-weight: bold;
+}
+
+.color-white {
+    background: var(--cream);
+    color: var(--kente-black);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.color-black {
+    background: var(--kente-black);
+    color: var(--cream);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    border: 1px solid var(--olive-medium);
+    font-weight: bold;
+}
+
+.your-turn {
+    animation: pulse-turn 1s ease-in-out infinite;
+}
+
+@keyframes pulse-turn {
+    0%, 100% {
+        background: rgba(212, 175, 55, 0.3);
+    }
+    50% {
+        background: rgba(212, 175, 55, 0.6);
+    }
+}
+
+.game-over {
+    background: var(--kente-gold);
+    color: var(--kente-black);
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+/* Chat Panel */
+.chat-panel {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid var(--olive-medium);
+}
+
+.chat-panel h2 {
+    color: var(--kente-gold);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.chat-messages {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 0.5rem;
+    min-height: 300px;
+}
+
+.chat-message {
+    padding: 0.25rem 0.5rem;
+    margin-bottom: 0.25rem;
+    border-radius: 4px;
+    color: var(--cream);
+    font-size: 0.9rem;
+}
+
+.chat-message.system-message {
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--kente-gold);
+    font-style: italic;
+    text-align: center;
+}
+
+.sender-name {
+    color: var(--kente-gold);
+    font-weight: bold;
+}
+
+.sender-name.own-message {
+    color: var(--kente-green);
+}
+
+.message-time {
+    color: #888;
+    font-size: 0.75rem;
+}
+
+/* Chat input */
+.chat-panel vaadin-text-field {
+    --vaadin-input-field-background: rgba(255, 255, 255, 0.9);
+}

@@ -91,13 +91,16 @@ public class MainLayout extends AppLayout {
         RouterLink homeLink = new RouterLink("Play Game", BoardView.class);
         homeLink.addClassName("nav-link");
 
+        RouterLink lobbyLink = new RouterLink("Online Lobby", LobbyView.class);
+        lobbyLink.addClassName("nav-link");
+
         RouterLink leaderboardLink = new RouterLink("Leaderboard", LeaderboardView.class);
         leaderboardLink.addClassName("nav-link");
 
         RouterLink profileLink = new RouterLink("My Profile", ProfileView.class);
         profileLink.addClassName("nav-link");
 
-        drawerLayout.add(homeLink, leaderboardLink, profileLink);
+        drawerLayout.add(homeLink, lobbyLink, leaderboardLink, profileLink);
 
         addToDrawer(drawerLayout);
     }
