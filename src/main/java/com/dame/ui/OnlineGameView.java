@@ -58,6 +58,13 @@ public class OnlineGameView extends VerticalLayout implements HasUrlParameter<Lo
     private VerticalLayout chatMessages;
     private TextField chatInput;
 
+    // Rematch UI components
+    private HorizontalLayout rematchControls;
+    private Button requestRematchBtn;
+    private Button acceptRematchBtn;
+    private Button declineRematchBtn;
+    private Span rematchStatus;
+
     private BoardSquare selectedSquare;
     private List<Move> currentValidMoves;
 
@@ -71,10 +78,10 @@ public class OnlineGameView extends VerticalLayout implements HasUrlParameter<Lo
     private Registration chatRegistration;
 
     public OnlineGameView(PlayerService playerService,
-                         OnlineGameService gameService,
-                         ChatService chatService,
-                         GameSessionBroadcaster gameBroadcaster,
-                         ChatBroadcaster chatBroadcaster) {
+            OnlineGameService gameService,
+            ChatService chatService,
+            GameSessionBroadcaster gameBroadcaster,
+            ChatBroadcaster chatBroadcaster) {
         this.playerService = playerService;
         this.gameService = gameService;
         this.chatService = chatService;
@@ -141,8 +148,7 @@ public class OnlineGameView extends VerticalLayout implements HasUrlParameter<Lo
 
         H2 title = new H2(isSpectator ? "Spectating" : "Online Game");
 
-        Button backBtn = new Button("Back to Lobby", e ->
-                getUI().ifPresent(ui -> ui.navigate("lobby")));
+        Button backBtn = new Button("Back to Lobby", e -> getUI().ifPresent(ui -> ui.navigate("lobby")));
         backBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
         header.add(title, backBtn);
@@ -176,10 +182,8 @@ public class OnlineGameView extends VerticalLayout implements HasUrlParameter<Lo
         playerInfo.setAlignItems(FlexComponent.Alignment.CENTER);
         playerInfo.setSpacing(true);
 
-        String whiteName = session.getWhitePlayer() != null ?
-                session.getWhitePlayer().getUsername() : "?";
-        String blackName = session.getBlackPlayer() != null ?
-                session.getBlackPlayer().getUsername() : "?";
+        String whiteName = session.getWhitePlayer() != null ? session.getWhitePlayer().getUsername() : "?";
+        String blackName = session.getBlackPlayer() != null ? session.getBlackPlayer().getUsername() : "?";
 
         opponentLabel = new Span(whiteName + " vs " + blackName);
         opponentLabel.addClassName("opponent-label");
@@ -187,8 +191,7 @@ public class OnlineGameView extends VerticalLayout implements HasUrlParameter<Lo
         yourColorLabel = new Span();
         if (!isSpectator) {
             yourColorLabel.setText("You are " + myColor.name());
-            yourColorLabel.addClassName(myColor == com.dame.engine.Player.WHITE ?
-                    "color-white" : "color-black");
+            yourColorLabel.addClassName(myColor == com.dame.engine.Player.WHITE ? "color-white" : "color-black");
         } else {
             yourColorLabel.setText("Spectating");
         }
@@ -208,18 +211,38 @@ public class OnlineGameView extends VerticalLayout implements HasUrlParameter<Lo
 
         // Controls (only for players)
         HorizontalLayout controls = new HorizontalLayout();
+        controls.setAlignItems(FlexComponent.Alignment.CENTER);
+        controls.setSpacing(true);
+
         if (!isSpectator) {
             Button forfeitBtn = new Button("Forfeit Round", e -> forfeitRound());
             forfeitBtn.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
-
-            Button newRoundBtn = new Button("New Round", e -> startNewRound());
-            newRoundBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
-            newRoundBtn.setVisible(false); // Show only when round ends
-
-            controls.add(forfeitBtn, newRoundBtn);
+            controls.add(forfeitBtn);
         }
 
-        panel.add(playerInfo, scoreLabel, statusLabel, boardContainer, controls);
+        // Rematch controls (shown after game ends)
+        rematchControls = new HorizontalLayout();
+        rematchControls.setAlignItems(FlexComponent.Alignment.CENTER);
+        rematchControls.setSpacing(true);
+        rematchControls.setVisible(false);
+
+        if (!isSpectator) {
+            requestRematchBtn = new Button("Request Rematch", e -> requestRematch());
+            requestRematchBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+
+            acceptRematchBtn = new Button("Accept Rematch", e -> acceptRematch());
+            acceptRematchBtn.addThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_SMALL);
+
+            declineRematchBtn = new Button("Decline", e -> declineRematch());
+            declineRematchBtn.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
+
+            rematchStatus = new Span();
+            rematchStatus.addClassName("rematch-status");
+
+            rematchControls.add(requestRematchBtn, acceptRematchBtn, declineRematchBtn, rematchStatus);
+        }
+
+        panel.add(playerInfo, scoreLabel, statusLabel, boardContainer, controls, rematchControls);
         return panel;
     }
 
@@ -496,6 +519,7 @@ public class OnlineGameView extends VerticalLayout implements HasUrlParameter<Lo
 
         updateScore();
         updateStatus();
+        updateRematchUI();
     }
 
     private void updateScore() {
@@ -508,9 +532,8 @@ public class OnlineGameView extends VerticalLayout implements HasUrlParameter<Lo
 
         if (state == GameState.IN_PROGRESS) {
             com.dame.engine.Player turn = com.dame.engine.Player.valueOf(session.getCurrentTurn());
-            String turnName = turn == com.dame.engine.Player.WHITE ?
-                    session.getWhitePlayer().getUsername() :
-                    session.getBlackPlayer().getUsername();
+            String turnName = turn == com.dame.engine.Player.WHITE ? session.getWhitePlayer().getUsername()
+                    : session.getBlackPlayer().getUsername();
 
             if (gameLogic.isInMultiJump()) {
                 statusLabel.setText(turnName + " must continue jumping");
@@ -524,9 +547,8 @@ public class OnlineGameView extends VerticalLayout implements HasUrlParameter<Lo
                 statusLabel.removeClassName("your-turn");
             }
         } else {
-            String winner = state == GameState.WHITE_WINS ?
-                    session.getWhitePlayer().getUsername() :
-                    session.getBlackPlayer().getUsername();
+            String winner = state == GameState.WHITE_WINS ? session.getWhitePlayer().getUsername()
+                    : session.getBlackPlayer().getUsername();
             statusLabel.setText(winner + " wins this round!");
             statusLabel.addClassName("game-over");
         }
@@ -544,6 +566,64 @@ public class OnlineGameView extends VerticalLayout implements HasUrlParameter<Lo
         session = gameService.findById(session.getId()).orElse(session);
         gameLogic = gameService.reconstructGame(session);
         refreshBoard();
+    }
+
+    private void requestRematch() {
+        gameService.requestRematch(session.getId(), currentPlayer);
+        session = gameService.findById(session.getId()).orElse(session);
+        updateRematchUI();
+    }
+
+    private void acceptRematch() {
+        gameService.acceptRematch(session.getId(), currentPlayer);
+        session = gameService.findById(session.getId()).orElse(session);
+        gameLogic = gameService.reconstructGame(session);
+        refreshBoard();
+    }
+
+    private void declineRematch() {
+        gameService.declineRematch(session.getId(), currentPlayer);
+        session = gameService.findById(session.getId()).orElse(session);
+        updateRematchUI();
+        Notification.show("Rematch declined");
+    }
+
+    private void updateRematchUI() {
+        if (isSpectator || rematchControls == null) {
+            return;
+        }
+
+        boolean gameOver = gameLogic.isGameOver();
+        rematchControls.setVisible(gameOver);
+
+        if (!gameOver) {
+            return;
+        }
+
+        boolean hasPendingRequest = session.hasPendingRematchRequest();
+        Player requestedBy = session.getRematchRequestedBy();
+        boolean iRequestedIt = hasPendingRequest && requestedBy != null
+                && requestedBy.getId().equals(currentPlayer.getId());
+
+        if (!hasPendingRequest) {
+            // No pending request - show "Request Rematch" button
+            requestRematchBtn.setVisible(true);
+            acceptRematchBtn.setVisible(false);
+            declineRematchBtn.setVisible(false);
+            rematchStatus.setText("");
+        } else if (iRequestedIt) {
+            // I requested - show waiting message
+            requestRematchBtn.setVisible(false);
+            acceptRematchBtn.setVisible(false);
+            declineRematchBtn.setVisible(false);
+            rematchStatus.setText("Waiting for opponent...");
+        } else {
+            // Opponent requested - show accept/decline
+            requestRematchBtn.setVisible(false);
+            acceptRematchBtn.setVisible(true);
+            declineRematchBtn.setVisible(true);
+            rematchStatus.setText(requestedBy.getUsername() + " wants a rematch!");
+        }
     }
 
     @Override
@@ -623,6 +703,20 @@ public class OnlineGameView extends VerticalLayout implements HasUrlParameter<Lo
             case NEW_ROUND -> {
                 Notification.show("New round started!")
                         .addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+            }
+            case REMATCH_REQUESTED -> {
+                updateRematchUI();
+                if (update.getMessage() != null) {
+                    Notification.show(update.getMessage())
+                            .addThemeVariants(NotificationVariant.LUMO_PRIMARY);
+                }
+            }
+            case REMATCH_DECLINED -> {
+                updateRematchUI();
+                if (update.getMessage() != null) {
+                    Notification.show(update.getMessage())
+                            .addThemeVariants(NotificationVariant.LUMO_CONTRAST);
+                }
             }
             default -> {
             }

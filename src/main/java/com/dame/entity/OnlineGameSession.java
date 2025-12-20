@@ -114,6 +114,18 @@ public class OnlineGameSession {
     @Column(nullable = false)
     private boolean blackConnected = false;
 
+    /**
+     * Player who requested a rematch (nullable if no pending request)
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "rematch_requested_by_id")
+    private Player rematchRequestedBy;
+
+    /**
+     * When the rematch was requested
+     */
+    private LocalDateTime rematchRequestedAt;
+
     public OnlineGameSession() {
     }
 
@@ -262,12 +274,43 @@ public class OnlineGameSession {
         this.blackConnected = blackConnected;
     }
 
+    public Player getRematchRequestedBy() {
+        return rematchRequestedBy;
+    }
+
+    public void setRematchRequestedBy(Player rematchRequestedBy) {
+        this.rematchRequestedBy = rematchRequestedBy;
+    }
+
+    public LocalDateTime getRematchRequestedAt() {
+        return rematchRequestedAt;
+    }
+
+    public void setRematchRequestedAt(LocalDateTime rematchRequestedAt) {
+        this.rematchRequestedAt = rematchRequestedAt;
+    }
+
+    /**
+     * Checks if there is a pending rematch request.
+     */
+    public boolean hasPendingRematchRequest() {
+        return rematchRequestedBy != null;
+    }
+
+    /**
+     * Clears any pending rematch request.
+     */
+    public void clearRematchRequest() {
+        this.rematchRequestedBy = null;
+        this.rematchRequestedAt = null;
+    }
+
     /**
      * Checks if a player is part of this game session.
      */
     public boolean hasPlayer(Player player) {
         return (whitePlayer != null && whitePlayer.getId().equals(player.getId())) ||
-               (blackPlayer != null && blackPlayer.getId().equals(player.getId()));
+                (blackPlayer != null && blackPlayer.getId().equals(player.getId()));
     }
 
     /**

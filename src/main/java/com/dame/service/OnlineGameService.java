@@ -27,7 +27,7 @@ public class OnlineGameService {
     private final GameSessionBroadcaster broadcaster;
 
     public OnlineGameService(OnlineGameSessionRepository sessionRepository,
-                            GameSessionBroadcaster broadcaster) {
+            GameSessionBroadcaster broadcaster) {
         this.sessionRepository = sessionRepository;
         this.broadcaster = broadcaster;
     }
@@ -121,8 +121,7 @@ public class OnlineGameService {
         session.setMultiJumpPositionJson(
                 game.isInMultiJump()
                         ? BoardStateSerializer.serializePosition(game.getMultiJumpPosition())
-                        : null
-        );
+                        : null);
         session.setLastMoveAt(LocalDateTime.now());
 
         // Check if game ended
@@ -296,6 +295,127 @@ public class OnlineGameService {
 
         // Keep session in progress for rematch capability
         // Only set to COMPLETED if player explicitly leaves
+    }
+
+    /**
+     * Request a rematch from the opponent.
+     */
+    @Transactional
+    public void requestRematch(Long sessionId, Player player) {
+        Optional<OnlineGameSession> optSession = sessionRepository.findById(sessionId);
+        if (optSession.isEmpty()) {
+            return;
+        }
+
+        OnlineGameSession session = optSession.get();
+
+        // Validate player is part of this game
+        if (!session.hasPlayer(player)) {
+            return;
+        }
+
+        // Only allow rematch request when a round has ended
+        GameLogic game = reconstructGame(session);
+        if (!game.isGameOver()) {
+            return;
+        }
+
+        // Check if there's already a pending request
+        if (session.hasPendingRematchRequest()) {
+            // If opponent requested, this is effectively an accept
+            if (!session.getRematchRequestedBy().getId().equals(player.getId())) {
+                acceptRematch(sessionId, player);
+                return;
+            }
+            // Already requested by this player
+            return;
+        }
+
+        // Set rematch request
+        session.setRematchRequestedBy(player);
+        session.setRematchRequestedAt(LocalDateTime.now());
+        sessionRepository.save(session);
+
+        // Broadcast to opponent
+        GameUpdate update = GameUpdate.builder(GameUpdate.UpdateType.REMATCH_REQUESTED, sessionId)
+                .message(player.getUsername() + " wants a rematch!")
+                .build();
+
+        broadcaster.broadcast(sessionId, update);
+    }
+
+    /**
+     * Accept a pending rematch request.
+     */
+    @Transactional
+    public void acceptRematch(Long sessionId, Player player) {
+        Optional<OnlineGameSession> optSession = sessionRepository.findById(sessionId);
+        if (optSession.isEmpty()) {
+            return;
+        }
+
+        OnlineGameSession session = optSession.get();
+
+        // Validate player is part of this game
+        if (!session.hasPlayer(player)) {
+            return;
+        }
+
+        // Check there's a pending request from the opponent
+        if (!session.hasPendingRematchRequest()) {
+            return;
+        }
+
+        // Can't accept your own request
+        if (session.getRematchRequestedBy().getId().equals(player.getId())) {
+            return;
+        }
+
+        // Clear the rematch request and start new round
+        session.clearRematchRequest();
+        sessionRepository.save(session);
+
+        // Delegate to existing startNewRound logic
+        startNewRound(sessionId);
+    }
+
+    /**
+     * Decline a pending rematch request.
+     */
+    @Transactional
+    public void declineRematch(Long sessionId, Player player) {
+        Optional<OnlineGameSession> optSession = sessionRepository.findById(sessionId);
+        if (optSession.isEmpty()) {
+            return;
+        }
+
+        OnlineGameSession session = optSession.get();
+
+        // Validate player is part of this game
+        if (!session.hasPlayer(player)) {
+            return;
+        }
+
+        // Check there's a pending request
+        if (!session.hasPendingRematchRequest()) {
+            return;
+        }
+
+        // Can't decline your own request
+        if (session.getRematchRequestedBy().getId().equals(player.getId())) {
+            return;
+        }
+
+        // Clear the rematch request
+        session.clearRematchRequest();
+        sessionRepository.save(session);
+
+        // Broadcast decline
+        GameUpdate update = GameUpdate.builder(GameUpdate.UpdateType.REMATCH_DECLINED, sessionId)
+                .message(player.getUsername() + " declined the rematch")
+                .build();
+
+        broadcaster.broadcast(sessionId, update);
     }
 
     private String generateSessionCode() {

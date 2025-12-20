@@ -16,7 +16,9 @@ public class GameUpdate {
         PLAYER_DISCONNECTED,
         PLAYER_FORFEITED,
         NEW_ROUND,
-        SESSION_UPDATED
+        SESSION_UPDATED,
+        REMATCH_REQUESTED,
+        REMATCH_DECLINED
     }
 
     private final UpdateType type;
