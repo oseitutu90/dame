@@ -30,6 +30,8 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
+import java.util.Timer;
+import java.util.TimerTask;
 import jakarta.annotation.security.PermitAll;
 
 import java.util.List;
@@ -53,15 +55,16 @@ public class LobbyView extends VerticalLayout {
     private Button findMatchBtn;
     private Span queueStatus;
     private Registration broadcastRegistration;
+    private Timer heartbeatTimer;
 
     private Player currentPlayer;
 
     public LobbyView(PlayerService playerService,
-                    OnlinePresenceService presenceService,
-                    ChallengeService challengeService,
-                    MatchmakingService matchmakingService,
-                    OnlineGameService gameService,
-                    LobbyBroadcaster lobbyBroadcaster) {
+            OnlinePresenceService presenceService,
+            ChallengeService challengeService,
+            MatchmakingService matchmakingService,
+            OnlineGameService gameService,
+            LobbyBroadcaster lobbyBroadcaster) {
         this.playerService = playerService;
         this.presenceService = presenceService;
         this.challengeService = challengeService;
@@ -134,8 +137,7 @@ public class LobbyView extends VerticalLayout {
 
         add(title, mainContent);
 
-        // Initial data load
-        refreshData();
+        // Note: Initial data load moved to onAttach() to fix race condition
     }
 
     private VerticalLayout createPlayersPanel() {
@@ -343,8 +345,8 @@ public class LobbyView extends VerticalLayout {
     private Button createWatchButton(SpectateGameDTO game) {
         Button btn = new Button("Watch");
         btn.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
-        btn.addClickListener(e ->
-                getUI().ifPresent(ui -> ui.navigate("online-game/" + game.getSessionId() + "?spectate=true")));
+        btn.addClickListener(
+                e -> getUI().ifPresent(ui -> ui.navigate("online-game/" + game.getSessionId() + "?spectate=true")));
         return btn;
     }
 
@@ -371,7 +373,7 @@ public class LobbyView extends VerticalLayout {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
 
-        // Mark player as online
+        // Mark player as online FIRST, before loading data
         if (currentPlayer != null) {
             presenceService.playerOnline(currentPlayer);
         }
@@ -381,6 +383,26 @@ public class LobbyView extends VerticalLayout {
         broadcastRegistration = lobbyBroadcaster.register(update -> {
             ui.access(() -> handleLobbyUpdate(update));
         });
+
+        // Initial data load AFTER registering online (fixes race condition)
+        refreshData();
+
+        // Start heartbeat timer to keep presence alive (30 second interval)
+        if (currentPlayer != null) {
+            heartbeatTimer = new Timer(true); // daemon thread
+            heartbeatTimer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        presenceService.heartbeat(currentPlayer);
+                        // Also refresh data periodically to catch any missed updates
+                        ui.access(() -> refreshData());
+                    } catch (Exception e) {
+                        // UI might be detached, timer will be cancelled in onDetach
+                    }
+                }
+            }, 30000, 30000); // 30 seconds interval
+        }
 
         // Check for pending match
         if (currentPlayer != null) {
@@ -394,6 +416,12 @@ public class LobbyView extends VerticalLayout {
     @Override
     protected void onDetach(DetachEvent detachEvent) {
         super.onDetach(detachEvent);
+
+        // Cancel heartbeat timer
+        if (heartbeatTimer != null) {
+            heartbeatTimer.cancel();
+            heartbeatTimer = null;
+        }
 
         // Unregister from broadcasts
         if (broadcastRegistration != null) {
