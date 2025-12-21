@@ -106,9 +106,9 @@ class GameLogicTest {
             // Get valid moves and find the promotion move
             List<Move> moves = game.getValidMoves();
             Move promotionMove = moves.stream()
-                .filter(m -> m.getEndRow() == 0)
-                .findFirst()
-                .orElse(null);
+                    .filter(m -> m.getEndRow() == 0)
+                    .findFirst()
+                    .orElse(null);
 
             assertThat(promotionMove).isNotNull();
             game.applyMove(promotionMove);
@@ -139,9 +139,9 @@ class GameLogicTest {
             // Now it's black's turn - get moves and find promotion move
             List<Move> moves = game.getValidMoves();
             Move promotionMove = moves.stream()
-                .filter(m -> m.getEndRow() == 7)
-                .findFirst()
-                .orElse(null);
+                    .filter(m -> m.getEndRow() == 7)
+                    .findFirst()
+                    .orElse(null);
 
             assertThat(promotionMove).isNotNull();
             game.applyMove(promotionMove);
@@ -177,18 +177,18 @@ class GameLogicTest {
 
             // Find a single capture move (not the double capture)
             Move firstCapture = moves.stream()
-                .filter(m -> m.getCaptureCount() == 1 && m.getEndRow() == 3 && m.getEndCol() == 2)
-                .findFirst()
-                .orElse(null);
+                    .filter(m -> m.getCaptureCount() == 1 && m.getEndRow() == 3 && m.getEndCol() == 2)
+                    .findFirst()
+                    .orElse(null);
 
             // If no single capture found, the calculator returns only the full multi-jump
             // In that case, the full capture sequence is enforced
             if (firstCapture == null) {
                 // Full multi-jump is mandatory - find it
                 Move fullCapture = moves.stream()
-                    .filter(m -> m.getCaptureCount() == 2)
-                    .findFirst()
-                    .orElse(null);
+                        .filter(m -> m.getCaptureCount() == 2)
+                        .findFirst()
+                        .orElse(null);
 
                 assertThat(fullCapture).isNotNull();
                 boolean turnEnded = game.applyMove(fullCapture);
@@ -260,6 +260,73 @@ class GameLogicTest {
             game.applyMove(whiteMoves.get(0));
 
             // Black should have no moves - game over
+            assertThat(game.getGameState()).isEqualTo(GameState.WHITE_WINS);
+        }
+
+        @Test
+        @DisplayName("1 king vs 1 king is a draw")
+        void oneKingVsOneKingIsDraw() {
+            Board board = game.getBoard();
+            // Clear board
+            for (int r = 0; r < 8; r++) {
+                for (int c = 0; c < 8; c++) {
+                    board.remove(r, c);
+                }
+            }
+
+            // Setup: 1 white king, 1 black king (far apart, can't capture)
+            board.set(1, 0, new Piece(Player.WHITE, PieceType.KING));
+            board.set(7, 6, new Piece(Player.BLACK, PieceType.KING));
+
+            // Make a move to trigger state check
+            List<Move> moves = game.getValidMoves();
+            game.applyMove(moves.get(0));
+
+            assertThat(game.getGameState()).isEqualTo(GameState.DRAW);
+        }
+
+        @Test
+        @DisplayName("2 kings vs 1 king continues game")
+        void twoKingsVsOneKingContinues() {
+            Board board = game.getBoard();
+            // Clear board
+            for (int r = 0; r < 8; r++) {
+                for (int c = 0; c < 8; c++) {
+                    board.remove(r, c);
+                }
+            }
+
+            // Setup: 2 white kings, 1 black king (far apart)
+            board.set(1, 0, new Piece(Player.WHITE, PieceType.KING));
+            board.set(1, 4, new Piece(Player.WHITE, PieceType.KING));
+            board.set(7, 6, new Piece(Player.BLACK, PieceType.KING));
+
+            // Make a move to trigger state check
+            List<Move> moves = game.getValidMoves();
+            game.applyMove(moves.get(0));
+
+            assertThat(game.getGameState()).isEqualTo(GameState.IN_PROGRESS);
+        }
+
+        @Test
+        @DisplayName("king vs single man wins for king player")
+        void kingVsSingleManWinsForKing() {
+            Board board = game.getBoard();
+            // Clear board
+            for (int r = 0; r < 8; r++) {
+                for (int c = 0; c < 8; c++) {
+                    board.remove(r, c);
+                }
+            }
+
+            // Setup: 1 white king, 1 black man
+            board.set(3, 2, new Piece(Player.WHITE, PieceType.KING));
+            board.set(6, 5, new Piece(Player.BLACK, PieceType.MAN));
+
+            // Make a move to trigger state check
+            List<Move> moves = game.getValidMoves();
+            game.applyMove(moves.get(0));
+
             assertThat(game.getGameState()).isEqualTo(GameState.WHITE_WINS);
         }
     }

@@ -1,5 +1,9 @@
 package com.dame.engine;
 
+/**
+ * Represents a game piece with an owner and type.
+ * Can be a man or a king.
+ */
 public class Piece {
 
     private final Player owner;

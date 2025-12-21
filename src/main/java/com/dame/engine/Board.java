@@ -77,6 +77,29 @@ public class Board {
         return count;
     }
 
+    /**
+     * Count the number of kings for a player.
+     */
+    public int countKings(Player player) {
+        int count = 0;
+        for (int r = 0; r < SIZE; r++) {
+            for (int c = 0; c < SIZE; c++) {
+                Piece p = get(r, c);
+                if (p != null && p.getOwner() == player && p.isKing()) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Count the number of men (non-king pieces) for a player.
+     */
+    public int countMen(Player player) {
+        return countPieces(player) - countKings(player);
+    }
+
     public Board copy() {
         Board copy = new Board();
         for (int r = 0; r < SIZE; r++) {

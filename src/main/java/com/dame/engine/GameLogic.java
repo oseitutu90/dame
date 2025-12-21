@@ -194,8 +194,34 @@ public class GameLogic {
 
         if (whitePieces == 0) {
             gameState = GameState.BLACK_WINS;
+            return;
         } else if (blackPieces == 0) {
             gameState = GameState.WHITE_WINS;
+            return;
+        }
+
+        // Endgame detection
+        int whiteKings = board.countKings(Player.WHITE);
+        int blackKings = board.countKings(Player.BLACK);
+        int whiteMen = board.countMen(Player.WHITE);
+        int blackMen = board.countMen(Player.BLACK);
+
+        // Rule 1: Both players have exactly 1 king each (no other pieces) = Draw
+        if (whitePieces == 1 && blackPieces == 1 && whiteKings == 1 && blackKings == 1) {
+            gameState = GameState.DRAW;
+            return;
+        }
+
+        // Rule 2: King(s) vs single man = King player wins
+        // White has only king(s), Black has only 1 man
+        if (whiteKings > 0 && whiteMen == 0 && blackPieces == 1 && blackMen == 1) {
+            gameState = GameState.WHITE_WINS;
+            return;
+        }
+        // Black has only king(s), White has only 1 man
+        if (blackKings > 0 && blackMen == 0 && whitePieces == 1 && whiteMen == 1) {
+            gameState = GameState.BLACK_WINS;
+            return;
         }
     }
 
@@ -215,9 +241,9 @@ public class GameLogic {
      * Restores game state from a persisted online session.
      * Used to reconstruct game state when loading from database.
      *
-     * @param board the board state to restore
-     * @param currentPlayer the player whose turn it is
-     * @param gameState the current game state
+     * @param board             the board state to restore
+     * @param currentPlayer     the player whose turn it is
+     * @param gameState         the current game state
      * @param multiJumpPosition the position of a piece mid-jump, or null
      */
     public void restoreState(Board board, Player currentPlayer, GameState gameState, Position multiJumpPosition) {
