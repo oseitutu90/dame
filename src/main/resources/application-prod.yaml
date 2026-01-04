@@ -19,17 +19,28 @@ spring:
     console:
       enabled: false
 
-# Actuator endpoints for K8s health checks
+# Actuator + OpenTelemetry endpoints for K8s
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics
   endpoint:
     health:
       show-details: when-authorized
       probes:
         enabled: true
+  # OpenTelemetry Tracing -> SigNoz
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+    propagation:
+      consume: [w3c, b3]
+      produce: [w3c, b3]
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://signoz-otel-collector.platform.svc:4318/v1/traces}
 
 # Logging
 logging:

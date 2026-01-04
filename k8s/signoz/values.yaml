@@ -1,0 +1,35 @@
+# SigNoz Helm Values
+# Install: helm install signoz signoz/signoz -n platform -f values.yaml
+
+global:
+  # Using rancher local-path provisioner
+  storageClass: "local-path"
+
+clickhouse:
+  persistence:
+    size: 50Gi
+  replicaCount: 1
+
+# Query service resource limits
+queryService:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+# Frontend
+frontend:
+  service:
+    type: ClusterIP
+    port: 3301
+
+# OTel Collector configuration
+otelCollector:
+  service:
+    grpc:
+      port: 4317
+    http:
+      port: 4318

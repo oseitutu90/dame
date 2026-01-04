@@ -11,3 +11,7 @@ data:
   DB_NAME: "dame"
   DB_USER: "dame_user"
   JAVA_OPTS: "-Xms256m -Xmx512m"
+  # OpenTelemetry Configuration
+  OTEL_SERVICE_NAME: "dame"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://signoz-otel-collector.platform.svc:4318/v1/traces"
+
