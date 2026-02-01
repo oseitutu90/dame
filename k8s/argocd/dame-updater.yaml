@@ -12,7 +12,7 @@ spec:
       writeBackTarget: "kustomization"
 
   commonUpdateSettings:
-    updateStrategy: "newest-build"
+    updateStrategy: "digest"
     allowTags: "regexp:^[0-9a-f]{7,12}$"
 
   applicationRefs:
@@ -22,3 +22,4 @@ spec:
           imageName: "ghcr.io/oseitutu90/dame"
           commonUpdateSettings:
             pullSecret: "pullsecret:argocd-image-updater-system/ghcr-secret"
+            updateStrategy: "newest-build"

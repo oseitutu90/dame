@@ -6,13 +6,57 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * UI-scoped service providing game logic access to Vaadin views.
+ * Acts as a facade between UI components and the game engine.
+ *
+ * <h2>Architecture</h2>
+ * <pre>
+ *   ┌────────────┐     ┌─────────────┐     ┌────────────┐
+ *   │ BoardView  │ ──▶ │ DameService │ ──▶ │ GameLogic  │
+ *   │ (UI Layer) │     │  (Facade)   │     │  (Engine)  │
+ *   └────────────┘     └─────────────┘     └────────────┘
+ *                             │
+ *                             ▼
+ *                      ┌─────────────┐
+ *                      │ MatchScore  │
+ *                      └─────────────┘
+ * </pre>
+ *
+ * <h2>Scope: @UIScope</h2>
+ * Each browser tab/window gets its own instance of DameService.
+ * This means:
+ * <ul>
+ *   <li>Each tab has independent game state</li>
+ *   <li>Closing tab destroys the service instance</li>
+ *   <li>Multiple users can play separate games simultaneously</li>
+ * </ul>
+ *
+ * <h2>Responsibilities</h2>
+ * <ul>
+ *   <li>Delegates game logic to {@link GameLogic}</li>
+ *   <li>Manages match scoring via {@link MatchScore}</li>
+ *   <li>Handles forfeit logic when starting new game mid-match</li>
+ *   <li>Provides convenience methods for UI queries</li>
+ * </ul>
+ *
+ * @see BoardView
+ * @see GameLogic
+ * @see MatchScore
+ */
 @Service
 @UIScope
 public class DameService {
 
+    /** The game logic engine for the current game */
     private GameLogic game;
+
+    /** Tracks wins across the best-of-5 match series */
     private final MatchScore matchScore;
 
+    /**
+     * Creates a new DameService with fresh game and match state.
+     */
     public DameService() {
         this.game = new GameLogic();
         this.matchScore = new MatchScore();
@@ -22,7 +66,13 @@ public class DameService {
 
     /**
      * Starts a new game within the current match.
-     * If a game is in progress, it counts as a forfeit for the current player.
+     *
+     * <p>Behavior:</p>
+     * <ul>
+     *   <li>If match is over → does nothing (need resetMatch first)</li>
+     *   <li>If current game is over → records the result, starts new game</li>
+     *   <li>If current game in progress → counts as forfeit for current player</li>
+     * </ul>
      */
     public void newGame() {
         if (!matchScore.isMatchOver()) {

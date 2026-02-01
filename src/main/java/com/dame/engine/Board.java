@@ -1,10 +1,56 @@
 package com.dame.engine;
 
+/**
+ * Represents the 8x8 game board holding all pieces.
+ *
+ * <h2>Board Layout</h2>
+ * <pre>
+ *      col→  0   1   2   3   4   5   6   7
+ *    row ┌───┬───┬───┬───┬───┬───┬───┬───┐
+ *     0  │ L │ D │ L │ D │ L │ D │ L │ D │  ← BLACK's back row (promotion zone for WHITE)
+ *     1  │ D │ L │ D │ L │ D │ L │ D │ L │
+ *     2  │ L │ D │ L │ D │ L │ D │ L │ D │
+ *     3  │ D │ L │ D │ L │ D │ L │ D │ L │  ← Empty at start
+ *     4  │ L │ D │ L │ D │ L │ D │ L │ D │  ← Empty at start
+ *     5  │ D │ L │ D │ L │ D │ L │ D │ L │
+ *     6  │ L │ D │ L │ D │ L │ D │ L │ D │
+ *     7  │ D │ L │ D │ L │ D │ L │ D │ L │  ← WHITE's back row (promotion zone for BLACK)
+ *        └───┴───┴───┴───┴───┴───┴───┴───┘
+ *    L = Light square (never used)
+ *    D = Dark square (playable)
+ * </pre>
+ *
+ * <h2>Initial Setup</h2>
+ * <ul>
+ *   <li>BLACK pieces: rows 0-2, dark squares only (12 pieces)</li>
+ *   <li>WHITE pieces: rows 5-7, dark squares only (12 pieces)</li>
+ *   <li>Rows 3-4: empty (the "no man's land")</li>
+ * </ul>
+ *
+ * <h2>Under the Hood</h2>
+ * <ul>
+ *   <li>Internally uses a {@code Piece[8][8]} 2D array</li>
+ *   <li>null means empty square</li>
+ *   <li>{@link #copy()} creates a deep copy (clones all Piece objects)</li>
+ *   <li>Serialized to JSON by {@link BoardStateSerializer} for persistence</li>
+ * </ul>
+ *
+ * @see Piece
+ * @see GameLogic
+ * @see MoveCalculator
+ */
 public class Board {
 
+    /** Standard board size (8x8 squares) */
     public static final int SIZE = 8;
+
+    /** The 2D array holding pieces. null = empty square */
     private final Piece[][] grid;
 
+    /**
+     * Creates an empty board (no pieces placed).
+     * Call {@link #setupInitialPosition()} to place starting pieces.
+     */
     public Board() {
         this.grid = new Piece[SIZE][SIZE];
     }

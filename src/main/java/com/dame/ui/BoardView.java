@@ -21,6 +21,52 @@ import jakarta.annotation.security.PermitAll;
 
 import java.util.List;
 
+/**
+ * Main game view displaying the checkers board and controls.
+ * This is the primary UI for playing local (single-browser) games.
+ *
+ * <h2>Route</h2>
+ * Accessible at root URL "/" (default route).
+ *
+ * <h2>Layout Structure</h2>
+ * <pre>
+ *   ┌─────────────────────────────────────────┐
+ *   │               HEADER                    │
+ *   │            "Checkers"                   │
+ *   ├───────────────────────┬─────────────────┤
+ *   │      GAME AREA        │   SIDE PANEL    │
+ *   │   Score: W 2 - 1 B    │   How to Play   │
+ *   │   Game 3 • First to 3 │   Ghanaian      │
+ *   │   WHITE's turn        │   Dame Rules    │
+ *   │   ┌─────────────┐     │                 │
+ *   │   │ 8x8 BOARD   │     │                 │
+ *   │   │             │     │                 │
+ *   │   └─────────────┘     │                 │
+ *   │   [New Game] [Undo]   │                 │
+ *   └───────────────────────┴─────────────────┘
+ * </pre>
+ *
+ * <h2>User Interaction Flow</h2>
+ * <pre>
+ * 1. Click own piece → piece selected, valid moves highlighted
+ * 2. Click highlighted square → move executed
+ * 3. Click same piece → deselected
+ * 4. Click another own piece → switch selection
+ * 5. Multi-jump → auto-selects jumping piece, must continue
+ * </pre>
+ *
+ * <h2>Under the Hood</h2>
+ * <ul>
+ *   <li>Uses {@link DameService} for all game logic</li>
+ *   <li>Board is 8x8 grid of {@link BoardSquare} components</li>
+ *   <li>CSS classes control piece appearance and highlights</li>
+ *   <li>{@code @PermitAll} - no authentication required</li>
+ * </ul>
+ *
+ * @see BoardSquare
+ * @see DameService
+ * @see MainLayout
+ */
 @Route(value = "", layout = MainLayout.class)
 @PageTitle("Play | Checkers")
 @PermitAll

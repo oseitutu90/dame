@@ -2,15 +2,79 @@ package com.dame.engine;
 
 import java.util.List;
 
+/**
+ * Central game controller that orchestrates all game logic.
+ * Manages game state, validates moves, and enforces rules.
+ *
+ * <h2>Architecture Overview</h2>
+ * <pre>
+ *                    ┌─────────────┐
+ *                    │  GameLogic  │ ← Main orchestrator
+ *                    └──────┬──────┘
+ *           ┌───────────────┼───────────────┐
+ *           ▼               ▼               ▼
+ *     ┌─────────┐    ┌──────────────┐  ┌─────────────┐
+ *     │  Board  │    │MoveCalculator│  │ GameHistory │
+ *     └────┬────┘    └──────────────┘  └─────────────┘
+ *          ▼                                  │
+ *     ┌─────────┐                     ┌───────────────┐
+ *     │  Piece  │                     │ GameSnapshot  │
+ *     └─────────┘                     └───────────────┘
+ * </pre>
+ *
+ * <h2>Game Flow</h2>
+ * <pre>
+ * 1. User clicks piece → canSelect(row, col)
+ * 2. UI highlights moves → getValidMovesFor(row, col)
+ * 3. User clicks destination → applyMove(move)
+ * 4. Engine validates → updates board → checks promotion
+ * 5. Multi-jump? → keep turn : endTurn()
+ * 6. Check win conditions → updateGameState()
+ * </pre>
+ *
+ * <h2>Multi-Jump Handling</h2>
+ * When a capture leads to more available captures:
+ * <ul>
+ *   <li>{@code multiJumpPosition} tracks the jumping piece</li>
+ *   <li>{@code applyMove()} returns false (turn not ended)</li>
+ *   <li>Player must continue with that piece until no captures remain</li>
+ * </ul>
+ *
+ * <h2>Undo System</h2>
+ * Before each move, a {@link GameSnapshot} is pushed to {@link GameHistory}.
+ * {@link #undo()} restores the previous state (board, player, gameState).
+ *
+ * @see com.dame.service.DameService
+ * @see MoveCalculator
+ * @see Board
+ */
 public class GameLogic {
 
+    /** The game board containing all pieces */
     private Board board;
+
+    /** Whose turn it is (WHITE or BLACK) */
     private Player currentPlayer;
+
+    /** Calculates valid moves based on current board state */
     private MoveCalculator calculator;
+
+    /** Current game state (IN_PROGRESS, WHITE_WINS, etc.) */
     private GameState gameState;
-    private Position multiJumpPosition; // Track piece during multi-jump sequence
+
+    /**
+     * Position of piece mid-jump during multi-capture sequence.
+     * null when not in a multi-jump.
+     */
+    private Position multiJumpPosition;
+
+    /** Stack of previous states for undo functionality */
     private final GameHistory history;
 
+    /**
+     * Creates a new game with standard initial setup.
+     * WHITE moves first.
+     */
     public GameLogic() {
         this.board = new Board();
         this.board.setupInitialPosition();

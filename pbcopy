@@ -1,0 +1,79 @@
+Name:             operator-59d48b7dc8-tvvd8
+Namespace:        tailscale
+Priority:         0
+Service Account:  operator
+Node:             oseitutu/192.168.1.18
+Start Time:       Sat, 03 Jan 2026 01:49:55 -0600
+Labels:           app=operator
+                  pod-template-hash=59d48b7dc8
+Annotations:      cni.projectcalico.org/containerID: 484fea6df2edb5b9cb23ec8305724895a5468c64f2ddd96162b100f5c66911a4
+                  cni.projectcalico.org/podIP: 10.244.42.129/32
+                  cni.projectcalico.org/podIPs: 10.244.42.129/32
+                  kubectl.kubernetes.io/restartedAt: 2025-11-22T19:18:07-06:00
+Status:           Running
+IP:               10.244.42.129
+IPs:
+  IP:           10.244.42.129
+Controlled By:  ReplicaSet/operator-59d48b7dc8
+Containers:
+  operator:
+    Container ID:   containerd://4add27d2cf7d502889149845cbd31963df450e122e447b0d3a54b36be0fa4c8c
+    Image:          tailscale/k8s-operator:stable
+    Image ID:       docker.io/tailscale/k8s-operator@sha256:551e085388ca94cf86fe42eecf9a6250ac59f597b05ef98dfbb205219af7746d
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Sat, 17 Jan 2026 16:14:42 -0600
+    Last State:     Terminated
+      Reason:       Error
+      Exit Code:    1
+      Started:      Sat, 17 Jan 2026 16:09:36 -0600
+      Finished:     Sat, 17 Jan 2026 16:09:37 -0600
+    Ready:          True
+    Restart Count:  3841
+    Environment:
+      OPERATOR_INITIAL_TAGS:        tag:k8s-operator
+      OPERATOR_HOSTNAME:            tailscale-operator
+      OPERATOR_SECRET:              operator
+      OPERATOR_LOGGING:             info
+      OPERATOR_NAMESPACE:           tailscale (v1:metadata.namespace)
+      OPERATOR_LOGIN_SERVER:        
+      OPERATOR_INGRESS_CLASS_NAME:  tailscale
+      CLIENT_ID_FILE:               /oauth/client_id
+      CLIENT_SECRET_FILE:           /oauth/client_secret
+      PROXY_IMAGE:                  tailscale/tailscale:stable
+      PROXY_TAGS:                   tag:k8s
+      APISERVER_PROXY:              false
+      PROXY_FIREWALL_MODE:          auto
+      POD_NAME:                     operator-59d48b7dc8-tvvd8 (v1:metadata.name)
+      POD_UID:                       (v1:metadata.uid)
+    Mounts:
+      /oauth from oauth (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9smlt (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  oauth:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  operator-oauth
+    Optional:    false
+  kube-api-access-9smlt:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              kubernetes.io/os=linux
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason                Age                      From                   Message
+  ----     ------                ----                     ----                   -------
+  Warning  BackOff               3m44s (x90351 over 14d)  kubelet                Back-off restarting failed container operator in pod operator-59d48b7dc8-tvvd8_tailscale(e38861c2-3838-4045-9ce4-7875e3f600be)
+  Normal   TailscaleStateLoaded  1s (x3650 over 13d)      tailscale-state-store  Successfully loaded tailscaled state from Secret

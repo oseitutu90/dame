@@ -8,7 +8,42 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Serializes and deserializes Board state to/from JSON for persistence.
- * Format: Array of pieces with row, col, owner, and type.
+ * Used to save online game sessions to the database.
+ *
+ * <h2>JSON Format</h2>
+ * Only pieces are stored (not empty squares) for efficiency.
+ * <pre>
+ * [
+ *   {"row": 0, "col": 1, "owner": "BLACK", "type": "MAN"},
+ *   {"row": 5, "col": 0, "owner": "WHITE", "type": "KING"},
+ *   ...
+ * ]
+ * </pre>
+ *
+ * <h2>Usage</h2>
+ * <pre>
+ * // Save to database:
+ * String json = BoardStateSerializer.serialize(board);
+ *
+ * // Load from database:
+ * Board board = BoardStateSerializer.deserialize(json);
+ * </pre>
+ *
+ * <h2>Position Serialization</h2>
+ * Also handles serialization of {@link Position} objects for multi-jump tracking:
+ * <pre>
+ * {"row": 3, "col": 4}
+ * </pre>
+ *
+ * <h2>Under the Hood</h2>
+ * <ul>
+ *   <li>Uses Jackson ObjectMapper for JSON processing</li>
+ *   <li>Static methods (utility class pattern)</li>
+ *   <li>Throws RuntimeException on serialization errors (should never happen with valid data)</li>
+ * </ul>
+ *
+ * @see Board
+ * @see com.dame.entity.OnlineGameSession
  */
 public class BoardStateSerializer {
 

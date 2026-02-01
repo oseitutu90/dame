@@ -3,19 +3,85 @@ package com.dame.engine;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Calculates all valid moves for pieces on the board.
+ * Implements Ghanaian Dame (Draughts) rules.
+ *
+ * <h2>Ghanaian Dame Rule Summary</h2>
+ * <table border="1">
+ *   <tr><th>Rule</th><th>Description</th></tr>
+ *   <tr><td>Mandatory Capture</td><td>If any capture is available, player MUST capture</td></tr>
+ *   <tr><td>Free Choice</td><td>Player may choose ANY capture (no maximum capture rule)</td></tr>
+ *   <tr><td>Backward Capture</td><td>MAN pieces can capture backward (not just forward)</td></tr>
+ *   <tr><td>Flying Kings</td><td>KING can move/capture any distance diagonally</td></tr>
+ *   <tr><td>Multi-Jump</td><td>Must continue capturing if more captures available</td></tr>
+ * </table>
+ *
+ * <h2>Algorithm Overview</h2>
+ * <pre>
+ * getValidMoves(player):
+ *   1. Scan all squares for player's pieces
+ *   2. For each piece, calculate all possible moves
+ *   3. Separate moves into captures vs simple moves
+ *   4. If ANY captures exist → return ONLY captures (mandatory)
+ *   5. Otherwise → return simple moves
+ * </pre>
+ *
+ * <h2>Capture Calculation (Recursive)</h2>
+ * For multi-jump detection, the algorithm:
+ * <ol>
+ *   <li>Makes a capture on a board copy</li>
+ *   <li>Recursively searches for more captures from landing position</li>
+ *   <li>Tracks captured pieces to prevent re-capturing same piece</li>
+ *   <li>Records complete capture sequence when no more captures available</li>
+ * </ol>
+ *
+ * <h2>Direction Vectors</h2>
+ * <pre>
+ *   (-1,-1)  (-1,+1)     ↖  ↗
+ *       \    /           \ /
+ *        \  /             X  (piece)
+ *        /  \            / \
+ *       /    \          ↙  ↘
+ *   (+1,-1)  (+1,+1)
+ * </pre>
+ *
+ * @see GameLogic#applyMove(Move)
+ * @see Move
+ */
 public class MoveCalculator {
 
+    /** Reference to the game board */
     private final Board board;
 
-    // Direction vectors for diagonal movement
-    private static final int[][] MAN_DIRECTIONS_WHITE = { { -1, -1 }, { -1, 1 } }; // White moves up
-    private static final int[][] MAN_DIRECTIONS_BLACK = { { 1, -1 }, { 1, 1 } }; // Black moves down
+    // ========== DIRECTION VECTORS ==========
+    // Each direction is {rowDelta, colDelta}
+
+    /** WHITE men move upward (decreasing row) */
+    private static final int[][] MAN_DIRECTIONS_WHITE = { { -1, -1 }, { -1, 1 } };
+
+    /** BLACK men move downward (increasing row) */
+    private static final int[][] MAN_DIRECTIONS_BLACK = { { 1, -1 }, { 1, 1 } };
+
+    /** All 4 diagonal directions (for kings and captures) */
     private static final int[][] ALL_DIRECTIONS = { { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
 
+    /**
+     * Creates a MoveCalculator for the given board.
+     *
+     * @param board the board to calculate moves for
+     */
     public MoveCalculator(Board board) {
         this.board = board;
     }
 
+    /**
+     * Gets all valid moves for a player.
+     * If captures are available, ONLY captures are returned (mandatory capture rule).
+     *
+     * @param player the player to get moves for
+     * @return list of valid moves (may be empty if no moves available)
+     */
     public List<Move> getValidMoves(Player player) {
         List<Move> allMoves = new ArrayList<>();
         List<Move> captureMoves = new ArrayList<>();
