@@ -51,7 +51,7 @@ pipeline {
             passwordVariable: 'REG_PASS'
         )]) {
           sh """
-            mvn -B -Pproduction jib:build \
+            mvn -B -Pproduction com.google.cloud.tools:jib-maven-plugin:build \
               -Djib.to.image=${IMAGE} \
               -Djib.to.tag=${GIT_SHA} \
               -Djib.to.auth.username=\$REG_USER \
