@@ -1,0 +1,24 @@
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: dame-updater
+  namespace: argocd-image-updater-system
+spec:
+  namespace: argocd
+
+  writeBackConfig:
+    method: "git:secret:argocd-image-updater-system/git-creds"
+    gitConfig:
+      writeBackTarget: "kustomization"
+
+  commonUpdateSettings:
+    updateStrategy: "newest-build"
+    allowTags: "regexp:^[0-9a-f]{7,12}$"
+
+  applicationRefs:
+    - namePattern: "dame"
+      images:
+        - alias: "dame"
+          imageName: "ghcr.io/oseitutu90/dame"
+          commonUpdateSettings:
+            pullSecret: "pullsecret:argocd-image-updater-system/ghcr-secret"

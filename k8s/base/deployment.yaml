@@ -16,6 +16,7 @@ spec:
       labels:
         app.kubernetes.io/name: dame
         app.kubernetes.io/component: backend
+        version: v1
     spec:
       containers:
         - name: dame

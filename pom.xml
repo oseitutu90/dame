@@ -181,6 +181,34 @@
                             <productionMode>true</productionMode>
                         </configuration>
                     </plugin>
+                    <!-- Jib: build container images without Docker daemon -->
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <version>3.5.2</version>
+                        <configuration>
+                            <from>
+                                <image>eclipse-temurin:21-jre</image>
+                            </from>
+                            <to>
+                                <image>${jib.to.image}</image>
+                                <tags>
+                                    <tag>${jib.to.tag}</tag>
+                                </tags>
+                            </to>
+                            <container>
+                                <ports>
+                                    <port>8080</port>
+                                </ports>
+                                <user>1000</user>
+                                <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+                                <jvmFlags>
+                                    <jvmFlag>-XX:+UseContainerSupport</jvmFlag>
+                                    <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>
+                                </jvmFlags>
+                            </container>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
