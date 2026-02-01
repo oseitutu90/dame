@@ -41,6 +41,8 @@ pipeline {
     stage('Build & Push (Jib)') {
       steps {
         script {
+          // Fix Git ownership check for containerized builds
+          sh 'git config --global --add safe.directory "${WORKSPACE}"'
           env.GIT_SHA = sh(script: 'git rev-parse --short=8 HEAD', returnStdout: true).trim()
         }
         withCredentials([usernamePassword(
