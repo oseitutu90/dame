@@ -1,5 +1,28 @@
 pipeline {
-  agent any
+  agent {
+    kubernetes {
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: maven
+            image: maven:3.9.6-eclipse-temurin-21
+            command:
+            - sleep
+            args:
+            - infinity
+            resources:
+              requests:
+                memory: "1Gi"
+                cpu: "500m"
+              limits:
+                memory: "2Gi"
+                cpu: "1"
+        '''
+      defaultContainer 'maven'
+    }
+  }
 
   environment {
     APP_NAME = 'dame'
@@ -26,10 +49,10 @@ pipeline {
             passwordVariable: 'REG_PASS'
         )]) {
           sh """
-            mvn -B -Pproduction jib:build \\
-              -Djib.to.image=${IMAGE} \\
-              -Djib.to.tag=${GIT_SHA} \\
-              -Djib.to.auth.username=\$REG_USER \\
+            mvn -B -Pproduction jib:build \
+              -Djib.to.image=${IMAGE} \
+              -Djib.to.tag=${GIT_SHA} \
+              -Djib.to.auth.username=\$REG_USER \
               -Djib.to.auth.password=\$REG_PASS
           """
         }
