@@ -205,8 +205,12 @@
                                 <jvmFlags>
                                     <jvmFlag>-XX:+UseContainerSupport</jvmFlag>
                                     <jvmFlag>-XX:MaxRAMPercentage=75.0</jvmFlag>
+                                    <!-- Disable Spring DevTools in production -->
+                                    <jvmFlag>-Dspring.devtools.restart.enabled=false</jvmFlag>
                                 </jvmFlags>
                             </container>
+                            <!-- Exclude development-only dependencies -->
+                            <containerizingMode>packaged</containerizingMode>
                         </configuration>
                     </plugin>
                 </plugins>
