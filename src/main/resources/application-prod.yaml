@@ -1,4 +1,11 @@
 # Checkers - A Ghanaian Checkers Style Game - Production Configuration
+
+# Vaadin must be in production mode
+vaadin:
+  productionMode: true
+  # Suppress the deprecated property warning
+  # whitelisted-packages is being replaced by allowed-packages in future versions
+
 spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:dame}
