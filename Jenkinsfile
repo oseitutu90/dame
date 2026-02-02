@@ -97,12 +97,27 @@ pipeline {
         container('kubectl') {
           script {
             def color = params.DEPLOY_COLOR
+            echo "🔍 Waiting for dame-${color} to be ready..."
+            
+            // Wait for pods to be ready (Spring Boot takes ~60s)
+            sh """
+              kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=dame,version=${color} -n ${NAMESPACE} --timeout=180s
+            """
+            
             echo "🔍 Running smoke test on dame-${color}"
             
+            // Retry curl a few times in case of transient failures
             sh """
-              kubectl run smoke-test-\${BUILD_NUMBER} -n ${NAMESPACE} --rm -i \
-                --image=curlimages/curl --restart=Never -- \
-                curl -sf http://dame-${color}.${NAMESPACE}.svc.cluster.local:8080/actuator/health
+              for i in 1 2 3; do
+                if curl -sf http://dame-${color}.${NAMESPACE}.svc.cluster.local:8080/actuator/health; then
+                  echo "✅ Smoke test passed"
+                  exit 0
+                fi
+                echo "Attempt \$i failed, retrying in 10s..."
+                sleep 10
+              done
+              echo "❌ Smoke test failed after 3 attempts"
+              exit 1
             """
           }
         }
