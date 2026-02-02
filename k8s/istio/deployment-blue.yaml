@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: dame
-        image: ghcr.io/oseitutu90/dame:stable
+        image: ghcr.io/oseitutu90/dame:6a792392
         imagePullPolicy: Always
         ports:
         - name: http

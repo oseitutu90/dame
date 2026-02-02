@@ -20,11 +20,10 @@ pipeline {
                 memory: "2Gi"
                 cpu: "1"
           - name: kubectl
-            image: bitnami/kubectl:latest
+            image: alpine/k8s:1.28.4
             command:
-            - sleep
-            args:
-            - infinity
+            - cat
+            tty: true
         '''
       defaultContainer 'maven'
     }
