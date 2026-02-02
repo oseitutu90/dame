@@ -6,4 +6,4 @@ namespace: dame
 # Image transformer - Argo CD Image Updater will modify newTag
 images:
   - name: ghcr.io/oseitutu90/dame
-    newTag: 86feb8af
+    newTag: 3f6cc699
