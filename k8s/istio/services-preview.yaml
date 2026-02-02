@@ -1,0 +1,29 @@
+# Preview services for direct access to blue/green deployments
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dame-blue
+  namespace: dame
+spec:
+  selector:
+    app.kubernetes.io/name: dame
+    version: blue
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dame-green
+  namespace: dame
+spec:
+  selector:
+    app.kubernetes.io/name: dame
+    version: green
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http

@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: dame-vs
+  namespace: dame
+spec:
+  hosts:
+  - dame
+  http:
+  - route:
+    - destination:
+        host: dame
+        subset: blue
+      weight: 100
+    - destination:
+        host: dame
+        subset: green
+      weight: 0
